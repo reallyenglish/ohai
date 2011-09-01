@@ -46,6 +46,22 @@ def find_ip_and_mac(addresses)
   [ip, mac]
 end
 
+all_ipaddresses = Mash.new
+network["interfaces"].keys.sort.each do |iface|
+  if network["interfaces"][iface]["addresses"]
+    network["interfaces"][iface]["addresses"].keys.each do |addr|
+      next unless addr
+      case network["interfaces"][iface]["addresses"][addr]["family"]
+      when "inet"
+        all_ipaddresses[addr] = { "family" => "inet" }
+      when "inet6"
+        all_ipaddresses[addr] = { "family" => "inet6" }
+      end
+    end
+  end
+end
+ipaddresses all_ipaddresses
+
 if network[:default_interface]
   Ohai::Log.debug("Using default interface for default ip and mac address")
   im = find_ip_and_mac(network["interfaces"][network[:default_interface]]["addresses"])
